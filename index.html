@@ -329,7 +329,7 @@ let leadRowId = LEAD_ID;
 const Q = [
   { key:'monto', q:'¿Con cuánto quieres empezar a invertir?', help:'No hay respuesta incorrecta. Nos ayuda a filtrar por depósito mínimo.',
     opts:[
-      ['💵','Entre $1,000 y $5,000 MXN','Quiero probar sin arriesgar mucho'],
+      ['💵','Entre $2,000 y $5,000 MXN','Quiero probar sin arriesgar mucho'],
       ['💰','Entre $5,000 y $20,000 MXN','Ya tengo un ahorro apartado'],
       ['🏦','Más de $20,000 MXN','Busco una plataforma seria'],
       ['🤔','Todavía no lo decido','Primero quiero entender las opciones'],
@@ -400,7 +400,7 @@ function showResult(){
   const res = document.getElementById('result'); res.classList.remove('hidden');
   document.getElementById('rname').textContent = `${LEAD.name.split(' ')[0]}, este es tu resultado`;
   const a = LEAD.answers; const why = [];
-  if(/1,000 y \$5,000/.test(a.monto||'')) why.push('Puedes abrir cuenta gratis y empezar con un depósito bajo, sin comprometer todo tu ahorro.');
+  if(/2,000 y \$5,000/.test(a.monto||'')) why.push('Puedes empezar con el depósito mínimo (unos $2,000 MXN) y aumentar cuando te sientas cómodo, sin comprometer todo tu ahorro.');
   else if(/5,000 y \$20,000/.test(a.monto||'')) why.push('Tu monto te permite diversificar en varias acciones y ETFs desde el primer mes.');
   else if(/20,000/.test(a.monto||'')) why.push('Plataforma regulada con fondos de clientes separados, adecuada para montos mayores.');
   else why.push('Puedes abrir la cuenta gratis, explorar la plataforma y decidir tu monto después.');
