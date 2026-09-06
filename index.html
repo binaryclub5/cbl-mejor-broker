@@ -130,6 +130,10 @@ button{font-family:inherit}
 .cmp tr:last-child td{border-bottom:none}
 .cmp .win{background:rgba(34,197,94,.08);font-weight:800;color:var(--ink)}
 .ok{color:var(--green2);font-weight:800}.no{color:#CBD5E1;font-weight:800}
+.req{margin-top:14px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#F7FAFF;font-size:13px;color:var(--ink2)}
+.req b{display:block;font-size:13px;color:var(--ink);margin-bottom:6px}
+.req span{display:flex;gap:8px;align-items:flex-start;margin-top:4px;font-weight:600}
+.req span:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green2);flex:none;margin-top:7px}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
 .steps div{background:#F3F6FB;border-radius:12px;padding:10px 8px;text-align:center;font-size:12px;font-weight:700;color:var(--ink2)}
 .steps div b{display:block;font-size:18px;color:var(--navy2);margin-bottom:2px}
@@ -217,24 +221,6 @@ button{font-family:inherit}
       </div>
     </div>
 
-    <!-- CAPTURE -->
-    <div id="capture" class="cap hidden">
-      <div class="progress"><span>Último paso</span><span>90%</span></div>
-      <div class="bar"><i style="width:90%"></i></div>
-      <h2>Tu recomendación está lista</h2>
-      <p>Dinos a dónde enviarte la recomendación y la guía para tu primer depósito paso a paso.</p>
-      <div class="field"><label for="fname">Tu nombre</label><input id="fname" type="text" autocomplete="given-name" placeholder="Ej. Carlos" inputmode="text"></div>
-      <div class="field"><label for="fphone">WhatsApp</label>
-        <div class="phone">
-          <select id="fcc" aria-label="Código de país"><option value="+52" selected>🇲🇽 +52</option><option value="+56">🇨🇱 +56</option><option value="+57">🇨🇴 +57</option><option value="+51">🇵🇪 +51</option><option value="+54">🇦🇷 +54</option><option value="+34">🇪🇸 +34</option></select>
-          <input id="fphone" type="tel" autocomplete="tel-national" placeholder="55 1234 5678" inputmode="tel">
-        </div>
-      </div>
-      <label class="consent"><input type="checkbox" id="fconsent" checked> Acepto recibir la recomendación y la guía por WhatsApp. Sin spam, puedes darte de baja cuando quieras.</label>
-      <button class="btn mt" id="capBtn" type="button">Ver mi broker recomendado <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <div class="tiny">Tus datos no se comparten con terceros.</div>
-    </div>
-
     <!-- RESULT -->
     <div id="result" class="hidden">
       <div class="res-head">
@@ -268,6 +254,7 @@ button{font-family:inherit}
           </tbody>
         </table>
       </div>
+      <div class="req"><b>Para empezar a invertir necesitas:</b><span>Cuenta gratis</span><span>Verificar tu identidad (INE o pasaporte)</span><span>Primer depósito desde US$100 (aprox. $2,000 MXN)</span></div>
       <a class="btn mt" id="ctaBtn" href="#" rel="nofollow sponsored">Abrir mi cuenta gratis en NAGA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <div class="tiny">Toma 3 minutos. Cuenta gratis, sin permanencia.</div>
       <div class="steps">
@@ -374,33 +361,13 @@ function analyze(){
   const an = document.getElementById('analyzing'); an.classList.remove('hidden');
   fb('QuizComplete', LEAD.answers, true);
   ['an1','an2','an3'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('on'), 450*(i+1)));
-  setTimeout(()=>{ an.classList.add('hidden'); document.getElementById('capture').classList.remove('hidden'); document.getElementById('fname').focus({preventScroll:true}); window.scrollTo({top: document.getElementById('card').offsetTop-70, behavior:'smooth'}); }, 1900);
+  setTimeout(()=>{ an.classList.add('hidden'); showResult(); }, 1900);
 }
-
-/* ===================== CAPTURE ===================== */
-document.getElementById('capBtn').addEventListener('click', async ()=>{
-  const name = document.getElementById('fname'), phone = document.getElementById('fphone');
-  const cc = document.getElementById('fcc').value;
-  const digits = phone.value.replace(/\D/g,'');
-  let ok = true;
-  name.classList.toggle('err', name.value.trim().length<2); if(name.value.trim().length<2) ok=false;
-  phone.classList.toggle('err', digits.length<8); if(digits.length<8) ok=false;
-  if(!ok) return;
-  const btn = document.getElementById('capBtn'); btn.disabled = true; btn.style.opacity=.7; btn.textContent='Guardando…';
-  LEAD.name = name.value.trim(); LEAD.phone = cc + digits; LEAD.country = {'+52':'MX','+56':'CL','+57':'CO','+51':'PE','+54':'AR','+34':'ES'}[cc] || 'MX';
-  Object.assign(LEAD, { utm_source: utm('utm_source'), utm_medium: utm('utm_medium'), utm_campaign: utm('utm_campaign'), utm_content: utm('utm_content'), fbclid: utm('fbclid'), fbp: cookie('_fbp'), fbc: cookie('_fbc'), user_agent: navigator.userAgent, page_url: location.href, whatsapp_status: document.getElementById('fconsent').checked ? 'pending' : 'no_consent' });
-  try{
-    await fetch(SB_URL, { method:'POST', headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=minimal' }, body: JSON.stringify(LEAD) });
-  }catch(_){}
-  fb('Lead', { content_name:'cbl-quiz', country: LEAD.country });
-  showResult();
-});
 
 /* ===================== RESULT ===================== */
 function showResult(){
-  document.getElementById('capture').classList.add('hidden');
   const res = document.getElementById('result'); res.classList.remove('hidden');
-  document.getElementById('rname').textContent = `${LEAD.name.split(' ')[0]}, este es tu resultado`;
+  document.getElementById('rname').textContent = 'Este es tu resultado';
   const a = LEAD.answers; const why = [];
   if(/2,000 y \$5,000/.test(a.monto||'')) why.push('Puedes empezar con el depósito mínimo (unos $2,000 MXN) y aumentar cuando te sientas cómodo, sin comprometer todo tu ahorro.');
   else if(/5,000 y \$20,000/.test(a.monto||'')) why.push('Tu monto te permite diversificar en varias acciones y ETFs desde el primer mes.');
@@ -424,7 +391,19 @@ function showResult(){
   url.searchParams.set('sub1', leadRowId || EVENT_ID);
   if(utm('utm_content')) url.searchParams.set('sub2', utm('utm_content'));
   if(utm('utm_campaign')) url.searchParams.set('sub3', utm('utm_campaign'));
-  ['ctaBtn','stickyBtn'].forEach(id=>{ const el=document.getElementById(id); el.href = url.toString(); el.addEventListener('click',()=>{ fb('NagaClick', {content_name:'cbl-quiz-cta'}, true); fb('InitiateCheckout', {content_name:'naga-registro'}); }); });
+  let clicked=false;
+  ['ctaBtn','stickyBtn'].forEach(id=>{ const el=document.getElementById(id); el.href = url.toString(); el.addEventListener('click',(ev)=>{
+    if(clicked) return; clicked=true; ev.preventDefault();
+    // Evento de conversión real: clic hacia el registro de NAGA
+    fb('Lead', {content_name:'naga-registro', country:'MX'});
+    fb('NagaClick', {content_name:'cbl-quiz-cta'}, true);
+    // Registro anónimo del clic (sin datos personales) para cruzar con el sub1 del afiliado
+    try{
+      const row = { id: LEAD_ID, event_id: EVENT_ID, answers: LEAD.answers, country:'MX', utm_source: utm('utm_source'), utm_medium: utm('utm_medium'), utm_campaign: utm('utm_campaign'), utm_content: utm('utm_content'), fbclid: utm('fbclid'), fbp: cookie('_fbp'), fbc: cookie('_fbc'), user_agent: navigator.userAgent, page_url: location.href, whatsapp_status:'n/a', notes:'clicked_naga' };
+      fetch(SB_URL, { method:'POST', keepalive:true, headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=minimal' }, body: JSON.stringify(row) }).catch(()=>{});
+    }catch(_){}
+    setTimeout(()=>{ window.location.href = url.toString(); }, 250);
+  }); });
   document.body.classList.add('pad-sticky');
   window.scrollTo({top: document.getElementById('card').offsetTop-70, behavior:'smooth'});
   // sticky when main CTA out of view
