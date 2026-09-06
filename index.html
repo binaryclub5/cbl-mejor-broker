@@ -301,7 +301,7 @@ button{font-family:inherit}
 
 <script>
 /* ===================== CONFIG ===================== */
-const AFF_LINK = 'https://go.joinnaga.com/31PZMW7/6JHXF1/';
+const AFF_LINK = 'https://account.naga.com/register?lang=es&partner_id=1250&ps_campaign_id=0&ps_category=CRG&ps_offer_id=112&ps_offer_url_id=0&ps_timestamp=1788530541&ps_transaction_id=ba354fa5942f42458c598fb9589583d6&reason=jn1250&traffic_source=everflow'; // misma URL en español que usa el comparador (Base44)
 const SB_URL = 'https://xhpxzhcnbazwdvmgnrcu.supabase.co/rest/v1/cbl_quiz_leads';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhocHh6aGNuYmF6d2R2bWducmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwOTEwNjAsImV4cCI6MjEwMjY2NzA2MH0.YJNl3mknKA_MYkrYE3g_5TpiT6FkPIx-v-Ce8G5ny2E';
 
@@ -388,9 +388,6 @@ function showResult(){
   requestAnimationFrame(tick);
   // links
   const url = new URL(AFF_LINK);
-  url.searchParams.set('sub1', leadRowId || EVENT_ID);
-  if(utm('utm_content')) url.searchParams.set('sub2', utm('utm_content'));
-  if(utm('utm_campaign')) url.searchParams.set('sub3', utm('utm_campaign'));
   let clicked=false;
   ['ctaBtn','stickyBtn'].forEach(id=>{ const el=document.getElementById(id); el.href = url.toString(); el.addEventListener('click',(ev)=>{
     if(clicked) return; clicked=true; ev.preventDefault();
