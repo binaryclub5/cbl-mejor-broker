@@ -305,7 +305,7 @@ button{font-family:inherit}
   <section class="sec">
     <h2>Preguntas frecuentes</h2>
     <div class="faq">
-      <details><summary>¿Necesito mucho dinero para empezar?</summary><p>No. Los brokers mejor calificados del ranking permiten abrir cuenta gratis y empezar con montos bajos, desde aproximadamente $1,000 MXN según el método de pago.</p></details>
+      <details><summary>¿Necesito mucho dinero para empezar?</summary><p>No. Los brokers mejor calificados del ranking permiten abrir cuenta gratis y empezar con montos bajos, desde aproximadamente $2,000 MXN (US$100) según el método de pago.</p></details>
       <details><summary>¿Puedo invertir en acciones como Nvidia o Tesla desde México?</summary><p>Sí. Un broker regulado con acceso a acciones internacionales te permite comprar fracciones o acciones completas de empresas listadas en Estados Unidos desde tu celular.</p></details>
       <details><summary>¿Qué riesgo tiene?</summary><p>Toda inversión implica riesgo de pérdida de capital. Ningún broker garantiza rendimientos. Por eso el ranking premia regulación, transparencia y retiros comprobados, no promesas.</p></details>
       <details><summary>¿Cómo se financia el comparador?</summary><p>Somos un sitio editorial independiente. Podemos recibir una comisión del broker si abres una cuenta a través de nuestros enlaces. Eso no cambia la evaluación ni el orden del ranking.</p></details>
@@ -411,8 +411,9 @@ function showResult(){
   // links
   const url = new URL(AFF_LINK);
   url.searchParams.set('sub1', LEAD_ID);
-  if(utm('utm_content')) url.searchParams.set('sub2', utm('utm_content'));
+  url.searchParams.set('sub2', 'quiz');
   if(utm('utm_campaign')) url.searchParams.set('sub3', utm('utm_campaign'));
+  if(utm('utm_content')) url.searchParams.set('sub4', utm('utm_content'));
   let clicked=false;
   const nameEl=document.getElementById('lfName'), phoneEl=document.getElementById('lfPhone'), errEl=document.getElementById('lfErr');
   phoneEl.addEventListener('input',()=>{ phoneEl.value = phoneEl.value.replace(/\D/g,'').slice(0,10); });
@@ -425,6 +426,7 @@ function showResult(){
     errEl.classList.remove('on'); clicked=true;
     const btn = document.getElementById('ctaBtn'); btn.textContent='Abriendo tu cuenta…'; btn.style.opacity='.75';
     // Evento de conversión: lead con nombre + WhatsApp, justo antes de ir al registro de NAGA
+    try{ fbq('init','1706683103753813',{ph:'52'+digits, fn:name.toLowerCase().split(' ')[0], country:'mx'}); }catch(_){}
     fb('Lead', {content_name:'naga-registro', country:'MX'});
     fb('NagaClick', {content_name:'cbl-quiz-cta'}, true);
     try{
