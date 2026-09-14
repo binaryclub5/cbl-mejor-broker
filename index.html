@@ -99,6 +99,17 @@ button{font-family:inherit}
 .btn:active{transform:scale(.99)}
 .btn svg{width:18px;height:18px}
 .btn.mt{margin-top:16px}
+.lf{margin-top:16px;background:#F5FBF7;border:1.5px solid #BFE8CD;border-radius:16px;padding:16px}
+.lf h4{margin:0 0 4px;font-size:16px;font-weight:800}
+.lf p{margin:0 0 12px;font-size:13.5px;color:#4B5563;line-height:1.4}
+.lf label{display:block;font-size:12.5px;font-weight:700;color:#374151;margin:8px 0 4px}
+.lf input{width:100%;box-sizing:border-box;border:1.5px solid #D1D5DB;border-radius:12px;padding:13px 14px;font-size:16px;background:#fff;outline:none}
+.lf input:focus{border-color:#16A34A;box-shadow:0 0 0 3px rgba(22,163,74,.15)}
+.lf .err{display:none;color:#B91C1C;font-size:12.5px;margin-top:6px}
+.lf .err.on{display:block}
+.lf .priv{font-size:11.5px;color:#6B7280;margin-top:8px}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;width:0}
+
 .tiny{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
 
 /* result */
@@ -255,7 +266,18 @@ button{font-family:inherit}
         </table>
       </div>
       <div class="req"><b>Para empezar a invertir necesitas:</b><span>Cuenta gratis</span><span>Verificar tu identidad (INE o pasaporte)</span><span>Primer depósito desde US$100 (aprox. $2,000 MXN)</span></div>
-      <a class="btn mt" id="ctaBtn" href="#" rel="nofollow sponsored">Abrir mi cuenta gratis en NAGA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <div class="lf" id="leadForm">
+        <h4>Recibe tu guía de apertura por WhatsApp</h4>
+        <p>Te enviamos los pasos exactos para abrir y verificar tu cuenta en NAGA, y te avisamos si hay una promoción de bienvenida.</p>
+        <label for="lfName">Tu nombre</label>
+        <input id="lfName" type="text" autocomplete="given-name" placeholder="Ej. María" maxlength="60">
+        <label for="lfPhone">Tu WhatsApp (10 dígitos)</label>
+        <input id="lfPhone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="55 1234 5678" maxlength="14">
+        <input class="hp" id="lfWeb" type="text" tabindex="-1" autocomplete="off">
+        <div class="err" id="lfErr">Revisa tu nombre y un WhatsApp de 10 dígitos.</div>
+        <button class="btn mt" id="ctaBtn" type="button">Continuar y abrir mi cuenta en NAGA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <div class="priv">Solo usamos tu WhatsApp para enviarte la guía. Sin spam.</div>
+      </div>
       <div class="tiny">Toma 3 minutos. Cuenta gratis, sin permanencia.</div>
       <div class="steps">
         <div><b>1</b>Regístrate</div><div><b>2</b>Verifica tu identidad</div><div><b>3</b>Haz tu primer depósito</div>
@@ -297,7 +319,7 @@ button{font-family:inherit}
   </footer>
 </main>
 
-<div class="sticky" id="sticky"><a class="btn" id="stickyBtn" href="#" rel="nofollow sponsored">Abrir mi cuenta gratis en NAGA</a></div>
+<div class="sticky" id="sticky"><a class="btn" id="stickyBtn" href="#leadForm">Abrir mi cuenta gratis en NAGA</a></div>
 
 <script>
 /* ===================== CONFIG ===================== */
@@ -392,18 +414,25 @@ function showResult(){
   if(utm('utm_content')) url.searchParams.set('sub2', utm('utm_content'));
   if(utm('utm_campaign')) url.searchParams.set('sub3', utm('utm_campaign'));
   let clicked=false;
-  ['ctaBtn','stickyBtn'].forEach(id=>{ const el=document.getElementById(id); el.href = url.toString(); el.addEventListener('click',(ev)=>{
-    if(clicked) return; clicked=true; ev.preventDefault();
-    // Evento de conversión real: clic hacia el registro de NAGA
+  const nameEl=document.getElementById('lfName'), phoneEl=document.getElementById('lfPhone'), errEl=document.getElementById('lfErr');
+  phoneEl.addEventListener('input',()=>{ phoneEl.value = phoneEl.value.replace(/\D/g,'').slice(0,10); });
+  document.getElementById('stickyBtn').addEventListener('click',(ev)=>{ ev.preventDefault(); document.getElementById('leadForm').scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>nameEl.focus(),400); });
+  document.getElementById('ctaBtn').addEventListener('click',(ev)=>{
+    ev.preventDefault(); if(clicked) return;
+    const name = (nameEl.value||'').trim(), digits = (phoneEl.value||'').replace(/\D/g,'');
+    if(document.getElementById('lfWeb').value){ return; }
+    if(name.length<2 || digits.length!==10){ errEl.classList.add('on'); (name.length<2?nameEl:phoneEl).focus(); return; }
+    errEl.classList.remove('on'); clicked=true;
+    const btn = document.getElementById('ctaBtn'); btn.textContent='Abriendo tu cuenta…'; btn.style.opacity='.75';
+    // Evento de conversión: lead con nombre + WhatsApp, justo antes de ir al registro de NAGA
     fb('Lead', {content_name:'naga-registro', country:'MX'});
     fb('NagaClick', {content_name:'cbl-quiz-cta'}, true);
-    // Registro anónimo del clic (sin datos personales) para cruzar con el sub1 del afiliado
     try{
-      const row = { id: LEAD_ID, event_id: EVENT_ID, answers: LEAD.answers, country:'MX', utm_source: utm('utm_source'), utm_medium: utm('utm_medium'), utm_campaign: utm('utm_campaign'), utm_content: utm('utm_content'), fbclid: utm('fbclid'), fbp: cookie('_fbp'), fbc: cookie('_fbc'), user_agent: navigator.userAgent, page_url: location.href, whatsapp_status:'n/a', notes:'clicked_naga' };
+      const row = { id: LEAD_ID, event_id: EVENT_ID, name: name, phone: '+52'+digits, answers: LEAD.answers, country:'MX', utm_source: utm('utm_source'), utm_medium: utm('utm_medium'), utm_campaign: utm('utm_campaign'), utm_content: utm('utm_content'), fbclid: utm('fbclid'), fbp: cookie('_fbp'), fbc: cookie('_fbc'), user_agent: navigator.userAgent, page_url: location.href, whatsapp_status:'pendiente', notes:'form_submit_clicked_naga' };
       fetch(SB_URL, { method:'POST', keepalive:true, headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY, 'Content-Type':'application/json', 'Prefer':'return=minimal' }, body: JSON.stringify(row) }).catch(()=>{});
     }catch(_){}
-    setTimeout(()=>{ window.location.href = url.toString(); }, 250);
-  }); });
+    setTimeout(()=>{ window.location.href = url.toString(); }, 350);
+  });
   document.body.classList.add('pad-sticky');
   window.scrollTo({top: document.getElementById('card').offsetTop-70, behavior:'smooth'});
   // sticky when main CTA out of view
